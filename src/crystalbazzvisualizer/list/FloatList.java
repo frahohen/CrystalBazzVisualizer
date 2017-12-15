@@ -6,11 +6,10 @@
 package crystalbazzvisualizer.list;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  *
- * @author -QUESTION-
+ * @author frahohen
  */
 public class FloatList {
 

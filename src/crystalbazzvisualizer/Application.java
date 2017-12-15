@@ -1,29 +1,36 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package crystalbazzvisualizer;
 
-import crystalbazzvisualizer.object.WaveBox;
 import crystalbazzvisualizer.definition.Definition;
 import crystalbazzvisualizer.service.WaveBoxService;
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Quaternion;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import crystalbazzvisualizer.definition.WaveBoxColorDefinition;
+import crystalbazzvisualizer.definition.WaveBoxCountDefinition;
+import crystalbazzvisualizer.definition.WaveBoxMassDefinition;
+import crystalbazzvisualizer.list.FloatList;
 
 /**
- * test
- * @author normenhansen
+ * 
+ * @author frahohen
  */
 public class Application extends SimpleApplication {
 
-    private ArrayList<WaveBox> waveformMix, waveformLeft,waveformRight, frequencyLeft, FrequencyRight;
-    private int waveformSize;
     private static MinimProcessing minimProcess;
     private static Application app;
+    private static WaveBoxCountDefinition waveBoxCountDefinition;
+    private static WaveBoxMassDefinition waveBoxMassDefinition;
+    private static WaveBoxMassDefinition waveBoxMassDefinitionRight;
+    private static WaveBoxMassDefinition waveBoxMassDefinitionLeft;
+    private static WaveBoxColorDefinition waveBoxColorDefinition;
     
     private WaveBoxService boxService;
     
@@ -39,178 +46,122 @@ public class Application extends SimpleApplication {
         app = new Application();
         app.start();
     }
-
-    /*
-    public float cC(int value)
-    {
-        float fvalue;
-        fvalue = (2.0f/255.0f)*(float)value; 
-        return fvalue;
-    }
-    */
     
     @Override
     public void simpleInitApp() {
         // Init Camera
-        /*
-            cam.setLocation(new Vector3f(-3.4978552f ,2.5523603f ,4.9107704f));
-            cam.setRotation(new Quaternion(0.04502283f ,0.8943176f ,-0.09246529f, 0.43545276f));
-            flyCam.setEnabled(false);
-        */
-        //Direction:0.65877444 Y:-0.22367756 Z:-0.7183205
+        flyCam.setMoveSpeed(60);
+        setDisplayFps(false);
+        setDisplayStatView(false);
         
-        //Init Processing & Waveform & Frequency
-        minimProcess = new MinimProcessing();
+        // Init how many Boxes should be displayed
+        waveBoxCountDefinition = new WaveBoxCountDefinition();
+        waveBoxCountDefinition.setFrequencyChannel(400);
+        waveBoxCountDefinition.setMixChannel(400);
+        waveBoxCountDefinition.setLeftChannel(400);
+        waveBoxCountDefinition.setRightChannel(400);
+        // Init the Measure of the Boxes
+        waveBoxMassDefinition = new WaveBoxMassDefinition(
+                0.25f,   // Length
+                2.0f,   // Height
+                0.4f,   // Thickness
+                0.1f    // Gap
+        );
+        waveBoxMassDefinitionRight = new WaveBoxMassDefinition(
+                0.25f,   // Length
+                2.5f,   // Height
+                0.4f,   // Thickness
+                0.1f    // Gap
+        );
+        waveBoxMassDefinitionLeft = new WaveBoxMassDefinition(
+                0.25f,   // Length
+                0.5f,   // Height
+                0.4f,   // Thickness
+                0.1f    // Gap
+        );
+        
+        waveBoxColorDefinition = new WaveBoxColorDefinition(0, 50, 160);
+        
+        // Init Processing & Waveform & Frequency
+        minimProcess = new MinimProcessing(waveBoxCountDefinition);
         minimProcess.init();//main("cbscene/MProcessing");
         
         // Init Values
         boxService = new WaveBoxService(Definition.BOXSERVICE);
-        // WERTE MÜSSEN ÜBEREINSTIMMEN !!!!!!!!!!!!!!!!!!!!!!!!!
-        //boxService.addBoxList(CBDefinition.MIX_CHANNEL, 800, app);
-        boxService.addBoxList(Definition.FREQ_CHANNEL, 100, app);
+        
+        boxService.addBoxList(Definition.MIX_CHANNEL, waveBoxCountDefinition.getMixChannel(),waveBoxMassDefinition, waveBoxColorDefinition, app);
+        boxService.addBoxList(Definition.RIGHT_CHANNEL, waveBoxCountDefinition.getRightChannel(),waveBoxMassDefinitionRight, waveBoxColorDefinition, app);
+        boxService.addBoxList(Definition.LEFT_CHANNEL, waveBoxCountDefinition.getLeftChannel(),waveBoxMassDefinitionLeft, waveBoxColorDefinition, app);
+        
+        boxService.addBoxList(Definition.FREQUENCY_CHANNEL, waveBoxCountDefinition.getFrequencyChannel(), waveBoxMassDefinition, waveBoxColorDefinition, app);
+        boxService.addBoxList(Definition.FREQUENCY_CHANNEL_REVERSE, waveBoxCountDefinition.getFrequencyChannel(), waveBoxMassDefinition, waveBoxColorDefinition, app);
+        
+        // Rotate Mix BoxList
+        boxService.rotateBoxList(Definition.MIX_CHANNEL, (90+75)*FastMath.DEG_TO_RAD, 90*FastMath.DEG_TO_RAD, 0);
+        boxService.moveBoxList(Definition.MIX_CHANNEL, -10f, -5f, 1.0f);
+        
+        // Rotate Right BoxList
+        boxService.rotateBoxList(Definition.RIGHT_CHANNEL, (90+75)*FastMath.DEG_TO_RAD, 90*FastMath.DEG_TO_RAD, 0);
+        boxService.moveBoxList(Definition.RIGHT_CHANNEL, -10f-0.8f, -5f-0.21f, 1.0f);
+        
+        // Rotate Left BoxList
+        boxService.rotateBoxList(Definition.LEFT_CHANNEL, (90+75)*FastMath.DEG_TO_RAD, 90*FastMath.DEG_TO_RAD, 0);
+        boxService.moveBoxList(Definition.LEFT_CHANNEL, -10f+0.8f, -5f+0.21f, 1.0f);
+        
+        // Rotate Frequency BoxList
+        boxService.rotateBoxList(Definition.FREQUENCY_CHANNEL, (90-75)*FastMath.DEG_TO_RAD, 90*FastMath.DEG_TO_RAD, 0);
+        boxService.moveBoxList(Definition.FREQUENCY_CHANNEL, -15f, 6f, -20f);
+        
+        // Rotate Reverse Frequency BoxList
+        boxService.rotateBoxList(Definition.FREQUENCY_CHANNEL_REVERSE, (90+75)*FastMath.DEG_TO_RAD, -90*FastMath.DEG_TO_RAD, 0);
+        boxService.moveBoxList(Definition.FREQUENCY_CHANNEL_REVERSE, -15f, 6f, -20f+0.65f);
+        
         rootNode.attachChild(boxService);
-        /*
-        waveformMix = new ArrayList<CBBox>();
-        waveformLeft = new ArrayList<CBBox>();
-        waveformRight = new ArrayList<CBBox>();
-        frequencyLeft = new ArrayList<CBBox>();
-        FrequencyRight = new ArrayList<CBBox>();
-        waveformSize = 800;
-        */
         
         // Init Light 
         DirectionalLight sun = new DirectionalLight();
         sun.setColor(ColorRGBA.White);
-        sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
+        sun.setDirection(new Vector3f(-1.0f,-1.0f,-1.0f).normalizeLocal());
         rootNode.addLight(sun);
         
         viewPort.setBackgroundColor(ColorRGBA.White);
-        
-        /*
-        // Init Waveform 
-        for(int i = 0; i < waveformSize; i+=2)
-        {
-            CBBox wrect = new CBBox(this);
-            wrect.setXYZ(0.01f, 1f, 0.05f);
-            wrect.setName("Box_"+i);
-            wrect.setColor(new ColorRGBA(0, cC(50), cC(160), 1.0f));
-            wrect.simpleInit();
-            wrect.getGeom().setLocalTranslation(-(float)i*0.01f+((waveformSize*0.0205f)/2), 0f, 0f);
-            waveformMix.add(wrect);
-        }
-        for(int i = 0; i < waveformSize; i+=2)
-        {
-            CBBox wrect = new CBBox(this);
-            wrect.setXYZ(0.01f, 1f, 0.05f);
-            wrect.setName("Box_"+(i+waveformSize));
-            wrect.setColor(new ColorRGBA(0, cC(65),cC(255),1.0f));
-            wrect.simpleInit();
-            wrect.getGeom().setLocalTranslation(-(float)i*0.01f+((waveformSize*0.0205f)/2), 0f, -0.1f);
-            waveformLeft.add(wrect);
-        }
-        for(int i = 0; i < waveformSize; i+=2)
-        {
-            CBBox wrect = new CBBox(this);
-            wrect.setXYZ(0.01f, 1f, 0.05f);
-            wrect.setName("Box_"+(i+waveformSize*2));
-            wrect.setColor(new ColorRGBA(0, cC(50), cC(160), 1.0f));
-            wrect.simpleInit();
-            wrect.getGeom().setLocalTranslation(-(float)i*0.01f+((waveformSize*0.0205f)/2), 0f, -0.2f);
-            waveformRight.add(wrect);
-        }
-        
-        for(int i = 0; i < 40; i++)
-        {
-            CBBox wrect = new CBBox(this);
-            wrect.setXYZ(0.05f, 0.8f, 0.15f);
-            wrect.setName("Box_"+(i+waveformSize*3));
-            wrect.setColor(new ColorRGBA(0, cC(50), cC(160), 1.0f));
-            wrect.simpleInit();
-            wrect.getGeom().setLocalTranslation(-(float)i*0.15f, 3f, -0.1f);
-            frequencyLeft.add(wrect);
-        }
-        for(int i = 0; i < 40; i++)
-        {
-            CBBox wrect = new CBBox(this);
-            wrect.setXYZ(0.05f, 0.8f, 0.15f);
-            wrect.setName("Box_"+(i+waveformSize*4));
-            wrect.setColor(new ColorRGBA(0, cC(50), cC(160), 1.0f));
-            wrect.simpleInit();
-            wrect.getGeom().setLocalTranslation((float)i*0.15f+0.15f, 3f, -0.1f);
-            FrequencyRight.add(wrect);
-        }
-        */
-        
-        
     }
 
     @Override
     public void simpleUpdate(float tpf) {
+
+        FloatList mixFloatList = minimProcess.getChannelService().getChannel(Definition.MIX_CHANNEL);
+        FloatList rightFloatList = minimProcess.getChannelService().getChannel(Definition.RIGHT_CHANNEL);
+        FloatList leftFloatList = minimProcess.getChannelService().getChannel(Definition.LEFT_CHANNEL);
+        FloatList frequencyFloatList = minimProcess.getChannelService().getChannel(Definition.FREQUENCY_CHANNEL);
         
-        /*
-        ((CBBoxService)rootNode.getChild(CBDefinition.BOXSERVICE)).update(
-                CBDefinition.MIX_CHANNEL, 
-                mprocess.getChannelService().getChannel(CBDefinition.MIX_CHANNEL)
-        );
-        */
+        ((WaveBoxService)rootNode.getChild(Definition.BOXSERVICE))
+                .update(
+                    Definition.MIX_CHANNEL, 
+                    mixFloatList
+                );
         
+        ((WaveBoxService)rootNode.getChild(Definition.BOXSERVICE))
+                .update(
+                    Definition.RIGHT_CHANNEL, 
+                    rightFloatList
+                );
         
+        ((WaveBoxService)rootNode.getChild(Definition.BOXSERVICE))
+                .update(
+                    Definition.LEFT_CHANNEL, 
+                    leftFloatList
+                );
+
+        ((WaveBoxService)rootNode.getChild(Definition.BOXSERVICE))
+                .update(Definition.FREQUENCY_CHANNEL, 
+                        frequencyFloatList
+                );
         
-        ((WaveBoxService)rootNode.getChild(Definition.BOXSERVICE)).update(Definition.FREQ_CHANNEL, 
-                minimProcess.getChannelService().getChannel(Definition.FREQ_CHANNEL)
-        );
-        
-        
-        /*
-        for(int i = 0; i < waveformMix.size(); i++)
-        {
-            waveformMix.get(i).getGeom().setLocalScale(1, mprocess.getMixChannel().get(i), 1);
-            waveformLeft.get(i).getGeom().setLocalScale(1, mprocess.getLeftChannel().get(i), 1);
-            waveformRight.get(i).getGeom().setLocalScale(1, mprocess.getRightChannel().get(i), 1);
-            
-            if(waveformMix.get(i).getGeom().getLocalScale().y <= 0.01f)
-            {
-                waveformMix.get(i).getGeom().setLocalScale(1, 0.01f, 1);
-            }
-            
-            if(waveformLeft.get(i).getGeom().getLocalScale().y <= 0.01f)
-            {
-                waveformLeft.get(i).getGeom().setLocalScale(1, 0.01f, 1);
-            }
-            
-            if(waveformRight.get(i).getGeom().getLocalScale().y <= 0.01f)
-            {
-                waveformRight.get(i).getGeom().setLocalScale(1, 0.01f, 1);
-            }
-        }
-        
-        for(int i = 0; i < frequencyLeft.size(); i++)
-        {
-            frequencyLeft.get(i).getGeom().setLocalScale(1, mprocess.getCurrentFreq().get(i), 1);
-            
-            if(frequencyLeft.get(i).getGeom().getLocalScale().y <= 0.01f)
-            {
-                frequencyLeft.get(i).getGeom().setLocalScale(1, 0.01f, 1);
-            }
-        }
-        for(int i = 0; i < FrequencyRight.size(); i++)
-        {
-            FrequencyRight.get(i).getGeom().setLocalScale(1, mprocess.getCurrentFreq().get(i), 1);
-            
-            if(FrequencyRight.get(i).getGeom().getLocalScale().y <= 0.01f)
-            {
-                FrequencyRight.get(i).getGeom().setLocalScale(1, 0.01f, 1);
-            }
-        }
-        */
-        
-        /*
-        System.out.println("Rotation: X:"+cam.getRotation().getX()+" Y:"+cam.getRotation().getY()+" Z:"+cam.getRotation().getZ()+" W:"+
-                cam.getRotation().getW()+
-                "|Location: X:"+cam.getLocation().x+" Y:"+cam.getLocation().y+" Z:"+cam.getLocation().z+
-                "|Direction:"+cam.getDirection().x+" Y:"+cam.getDirection().y+" Z:"+cam.getDirection().z);
-        */
-        
+        ((WaveBoxService)rootNode.getChild(Definition.BOXSERVICE))
+                .update(Definition.FREQUENCY_CHANNEL_REVERSE, 
+                        frequencyFloatList
+                );
     }
 
     @Override

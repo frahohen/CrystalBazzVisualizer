@@ -10,33 +10,47 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
+import crystalbazzvisualizer.definition.WaveBoxColorDefinition;
+import crystalbazzvisualizer.definition.WaveBoxMassDefinition;
 
 /**
  *
- * @author -QUESTION-
+ * @author frahohen
  */
 public class WaveBoxList extends Node {
-    
-    //private ArrayList<CBBox> boxList;
-    private int boxCount;
+    private int waveBoxCount;
+    private WaveBoxMassDefinition waveBoxMassDefinition;
+    private WaveBoxColorDefinition waveBoxColorDefinition;
 
-    public WaveBoxList(String name, int boxCount, SimpleApplication simpleApplication) {
+    public WaveBoxList(String name, int waveBoxCount, WaveBoxMassDefinition waveBoxMassDefinition, WaveBoxColorDefinition waveBoxColorDefinition, SimpleApplication simpleApplication) {
         this.name = name;
-        this.boxCount = boxCount;
+        this.waveBoxCount = waveBoxCount;
+        this.waveBoxMassDefinition = waveBoxMassDefinition;
+        this.waveBoxColorDefinition = waveBoxColorDefinition;
         init(simpleApplication);
     }
     
     private void init(SimpleApplication simpleApplication){
-        for(int i = 0; i < boxCount; i++)
+        for(int i = 0; i < waveBoxCount; i++)
         {
             WaveBox box = new WaveBox(
-                    new Vector3f(1f, 1f, 1f),
-                    new ColorRGBA(0,RGBtoFloat(50), RGBtoFloat(160), 1.0f),
+                    // x ... length
+                    // y ... maximum height
+                    // z ... thickness
+                    new Vector3f(waveBoxMassDefinition.getWaveBoxLength(), waveBoxMassDefinition.getWaveBoxHeight(), waveBoxMassDefinition.getWaveBoxThickness()),
+                    new ColorRGBA(RGBtoFloat(waveBoxColorDefinition.getR()),RGBtoFloat(waveBoxColorDefinition.getG()), RGBtoFloat(waveBoxColorDefinition.getB()), 1.0f),
                     simpleApplication
                     
             );
             // Hier muss der wert immer das doppelte sein und geht man eins drüber, dann hat man einen abstand
-            box.setLocalTranslation(2.1f*i, 0f, 0f);
+            box.setLocalTranslation(
+                    (
+                        (waveBoxMassDefinition.getWaveBoxLength() * 2) + 
+                        waveBoxMassDefinition.getWaveBoxGap()
+                    ) * i, 
+                    0f, 
+                    0f
+            );
             this.attachChild(box);
         }
     }
@@ -48,8 +62,7 @@ public class WaveBoxList extends Node {
         }
     }
     
-     private float RGBtoFloat(int value)
-    {
+    private float RGBtoFloat(int value){
         float fvalue;
         fvalue = (2.0f/255.0f)*(float)value; 
         return fvalue;

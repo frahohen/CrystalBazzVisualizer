@@ -9,10 +9,12 @@ import crystalbazzvisualizer.list.WaveBoxList;
 import crystalbazzvisualizer.list.FloatList;
 import com.jme3.app.SimpleApplication;
 import com.jme3.scene.Node;
+import crystalbazzvisualizer.definition.WaveBoxColorDefinition;
+import crystalbazzvisualizer.definition.WaveBoxMassDefinition;
 
 /**
  *
- * @author -QUESTION-
+ * @author frahohen
  */
 public class WaveBoxService extends Node {
     
@@ -32,22 +34,19 @@ public class WaveBoxService extends Node {
         this.name = name;
     }
     
-    public void addBoxList(String name, int boxCount, SimpleApplication simpleApplication){
-        this.attachChild(new WaveBoxList(name, boxCount, simpleApplication));
+    public void addBoxList(String name, int boxCount, WaveBoxMassDefinition waveBoxMassDefinition, WaveBoxColorDefinition waveBoxColorDefinition, SimpleApplication simpleApplication){
+        this.attachChild(new WaveBoxList(name, boxCount, waveBoxMassDefinition, waveBoxColorDefinition, simpleApplication));
     }
     
     public void update(String name, FloatList floatList){
         ((WaveBoxList)this.getChild(name)).updateLevel(floatList);
-        /*
-        for(int i = 0; i < this.getChildren().size(); i++){
-            CBBoxList boxList = (CBBoxList) this.getChild(i);
-            // TODO: Jede Boxliste muss einen äquivalenten Channel haben
-            // TODO: nicht GEOMETRY und NODE extenden !!!!!!!!!!!!!!!!!!!
-            boxList.updateLevel(list);
-        }
-        */
     }
-    // This can only be attached if all lists are added
-    //simpleApplication.getRootNode().attachChild(node);
     
+    public void rotateBoxList(String name, float x, float y, float z){
+        ((WaveBoxList)this.getChild(name)).rotate(x, y, z);
+    }
+    
+    public void moveBoxList(String name, float x, float y, float z){
+        ((WaveBoxList)this.getChild(name)).move(x, y, z);
+    }
 }

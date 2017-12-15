@@ -7,7 +7,7 @@ package crystalbazzvisualizer.list;
 
 /**
  *
- * @author -QUESTION-
+ * @author frahohen
  */
 public class FrequencyFloatList extends FloatList {
     

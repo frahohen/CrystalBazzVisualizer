@@ -7,14 +7,16 @@ package crystalbazzvisualizer;
 
 import crystalbazzvisualizer.service.ChannelService;
 import crystalbazzvisualizer.definition.Definition;
+import crystalbazzvisualizer.definition.WaveBoxCountDefinition;
 import ddf.minim.AudioPlayer;
 import ddf.minim.Minim;
 import ddf.minim.analysis.FFT;
-import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import processing.core.*;
 /**
  *
- * @author -QUESTION-
+ * @author frahohen
  */
 
 public class MinimProcessing extends PApplet {
@@ -23,116 +25,46 @@ public class MinimProcessing extends PApplet {
     private AudioPlayer player;
     private FFT fft;
     private ChannelService channelService;
-    
-    private ArrayList<Float> leftChannel, rightChannel, mixChannel;
-    private ArrayList<Float> currentFreq;
-    
-    //private int rectSize = 1;
-    private int waveRectCount = 800;
+    private WaveBoxCountDefinition waveBoxCountDefinition;
 
-    private int freqMax = 20000;
-    private int freqRectCount = 40;
-    private int freqScale = freqMax/freqRectCount;
+    public MinimProcessing(WaveBoxCountDefinition boxCountDefinition) {
+        this.waveBoxCountDefinition = boxCountDefinition;
+    }
     
     public void setup() {
         channelService = new ChannelService();
         
-        channelService.addChannel(Definition.MIX_CHANNEL, 800, Definition.WAVEFORM);
-        channelService.addChannel(Definition.LEFT_CHANNEL, 800, Definition.WAVEFORM);
-        channelService.addChannel(Definition.RIGHT_CHANNEL, 800, Definition.WAVEFORM);
-        channelService.addChannel(Definition.FREQ_CHANNEL, 100, Definition.FREQUENCY);
-        
-        // Init ArrayList
-        /*
-        mixChannel = new ArrayList<Float>();
-        leftChannel = new ArrayList<Float>();
-        rightChannel = new ArrayList<Float>();
-        currentFreq = new ArrayList<Float>();
-        
-       // Fill ArrayList with 0
-        for(int i = 0; i < freqRectCount; i++)
-        {
-            currentFreq.add(0f);
-        }
-        
-        // Fill Arraylist with 0
-        for(int i = 0; i < waveRectCount; i++){
-            mixChannel.add(i, 0f);
-            leftChannel.add(i, 0f);
-            rightChannel.add(i, 0f);
-        }
-        */
+        channelService.addChannel(Definition.MIX_CHANNEL, waveBoxCountDefinition.getMixChannel(), Definition.WAVEFORM);
+        channelService.addChannel(Definition.LEFT_CHANNEL, waveBoxCountDefinition.getLeftChannel(), Definition.WAVEFORM);
+        channelService.addChannel(Definition.RIGHT_CHANNEL, waveBoxCountDefinition.getRightChannel(), Definition.WAVEFORM);
+        channelService.addChannel(Definition.FREQUENCY_CHANNEL, waveBoxCountDefinition.getFrequencyChannel(), Definition.FREQUENCY);
         
         // Init Minim
         minim = new Minim(this);
         player = minim.loadFile("crYstalBaZZ ft. Stehpanie Kay - Take Whats Mine (Preview) (002)Master.mp3");
-        //player = minim.loadFile("cbscene/Calibration_Value_001.mp3");
+        //player = minim.loadFile("Calibration_Value_001.mp3");
         fft = new FFT(player.bufferSize(), player.sampleRate());
         player.loop();
+        
+        /* This delay is needed otherwise the application will collapse 
+           Hint: A one second delay is needed in the track before the track itself starts
+        */
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MinimProcessing.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void draw() {
-        // Waveform - Line
-        /*
-        for(int i = 0; i < player.bufferSize() - 1; i++)
-        {
-          float mix1 = player.mix.get(i) * 100;
-          float mix2 = player.mix.get(i+1) * 100;
-          
-          float left1 = player.left.get(i) * 100;
-          float left2 = player.left.get(i+1) * 100;
-          
-          float right1 = player.right.get(i) * 100;
-          float right2 = player.right.get(i+1) * 100;
-        }
-        */
-        
+        // Waveform Channel Level
         channelService.addLevel(Definition.MIX_CHANNEL,player.mix.level());
         channelService.addLevel(Definition.LEFT_CHANNEL,player.left.level());
         channelService.addLevel(Definition.RIGHT_CHANNEL,player.right.level());
         
-        // Waveform - Rect
-
-         // Add Level to ArrayList
-         /*
-        mixChannel.add(0, player.mix.level());
-        leftChannel.add(0, player.left.level());
-        rightChannel.add(0, player.right.level());
-        
-        // Limit ArrayList at around waveRectCount
-        if(mixChannel.size() > waveRectCount)
-        {
-            mixChannel.subList(waveRectCount, mixChannel.size()).clear();
-        }
-        if(leftChannel.size() > waveRectCount)
-        {
-            leftChannel.subList(waveRectCount, leftChannel.size()).clear();
-        }
-        if(rightChannel.size() > waveRectCount)
-        {
-            rightChannel.subList(waveRectCount, rightChannel.size()).clear();
-        }
-         */
-        
-        // Frequency - Rect
+        // Frequency Channel Level
         fft.forward(player.mix);
-       
-        channelService.setLevel(Definition.FREQ_CHANNEL, fft);
-        /*
-        int n = 0;
-        for(int i = 0; i < freqMax; i+=freqScale) 
-        {
-            currentFreq.set(n, fft.getFreq(i));
-            n++;
-        }   
-        */
-        /*
-        System.out.println("Size: "+ currentFreq.size());
-        for(int i = 0; i < currentFreq.size(); i++)
-        {
-            System.out.println(i+". Value: "+ currentFreq.get(i));
-        }
-        */
+        channelService.setLevel(Definition.FREQUENCY_CHANNEL, fft);
     }
     
     public void stop() {
@@ -140,48 +72,6 @@ public class MinimProcessing extends PApplet {
         minim.stop();
         super.stop();
     }
-
-    
-    /*
-    public int getWaveRectCount() {
-        return waveRectCount;
-    }
-    public void setWaveRectCount(int waveRectCount) {
-        this.waveRectCount = waveRectCount;
-    }
-    
-    public ArrayList<Float> getCurrentFreq() {
-        return currentFreq;
-    }
-
-    public void setCurrentFreq(ArrayList<Float> currentFreq) {
-        this.currentFreq = currentFreq;
-    }
-
-    public ArrayList<Float> getLeftChannel() {
-        return leftChannel;
-    }
-
-    public void setLeftChannel(ArrayList<Float> leftChannel) {
-        this.leftChannel = leftChannel;
-    }
-
-    public ArrayList<Float> getMixChannel() {
-        return mixChannel;
-    }
-
-    public void setMixChannel(ArrayList<Float> mixChannel) {
-        this.mixChannel = mixChannel;
-    }
-
-    public ArrayList<Float> getRightChannel() {
-        return rightChannel;
-    }
-
-    public void setRightChannel(ArrayList<Float> rightChannel) {
-        this.rightChannel = rightChannel;
-    }
-    */
 
     public ChannelService getChannelService() {
         return channelService;

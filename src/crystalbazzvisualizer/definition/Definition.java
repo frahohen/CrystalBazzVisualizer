@@ -7,7 +7,7 @@ package crystalbazzvisualizer.definition;
 
 /**
  *
- * @author -QUESTION-
+ * @author frahohen
  */
 public final class Definition {
     public static final String WAVEFORM = "WAVEFORM";
@@ -16,7 +16,8 @@ public final class Definition {
     public static final String MIX_CHANNEL = "MIX_CHANNEL";
     public static final String LEFT_CHANNEL = "LEFT_CHANNEL";
     public static final String RIGHT_CHANNEL = "RIGHT_CHANNEL";
-    public static final String FREQ_CHANNEL = "FREQ_CHANNEL";
+    public static final String FREQUENCY_CHANNEL = "FREQUENCY_CHANNEL";
+    public static final String FREQUENCY_CHANNEL_REVERSE = "FREQUENCY_CHANNEL_REVERSE";
     
     public static final String BOXSERVICE = "BOXSERVICE";
     
