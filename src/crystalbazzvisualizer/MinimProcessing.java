@@ -41,7 +41,7 @@ public class MinimProcessing extends PApplet {
         
         // Init Minim
         minim = new Minim(this);
-        player = minim.loadFile("crYstalBaZZ ft. Stehpanie Kay - Take Whats Mine (Preview) (002)Master.mp3");
+        player = minim.loadFile("Take_Whats_Mine_080.mp3");
         //player = minim.loadFile("Calibration_Value_001.mp3");
         fft = new FFT(player.bufferSize(), player.sampleRate());
         player.loop();
