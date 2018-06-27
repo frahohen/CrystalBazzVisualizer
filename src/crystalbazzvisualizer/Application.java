@@ -13,11 +13,14 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.FadeFilter;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import crystalbazzvisualizer.definition.WaveBoxColorDefinition;
 import crystalbazzvisualizer.definition.WaveBoxCountDefinition;
 import crystalbazzvisualizer.definition.WaveBoxMassDefinition;
+import crystalbazzvisualizer.helper.TimeCounter;
 import crystalbazzvisualizer.list.FloatList;
 
 /**
@@ -38,6 +41,10 @@ public class Application extends SimpleApplication {
     private static WaveBoxColorDefinition waveBoxColorDefinitionBlue;
     private static WaveBoxColorDefinition waveBoxColorDefinitionBlack;
     private static WaveBoxColorDefinition waveBoxColorDefinitionWhite;
+    
+    private FilterPostProcessor filterPostProcessor;
+    private FadeFilter fadeFilter;
+    private TimeCounter timeCounter;
     
     private WaveBoxService boxService;
     
@@ -177,11 +184,18 @@ public class Application extends SimpleApplication {
         rootNode.addLight(sun);
         
         viewPort.setBackgroundColor(ColorRGBA.White);
+        
+        filterPostProcessor = new FilterPostProcessor(assetManager);
+        fadeFilter = new FadeFilter(2); // e.g. 2 seconds
+        fadeFilter.setValue(0);
+        filterPostProcessor.addFilter(fadeFilter);
+        viewPort.addProcessor(filterPostProcessor);
+        
+        timeCounter = new TimeCounter(5.0f);
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-
         FloatList mixFloatList = minimProcess.getChannelService().getChannel(Definition.MIX_CHANNEL);
         FloatList rightFloatList = minimProcess.getChannelService().getChannel(Definition.RIGHT_CHANNEL);
         FloatList leftFloatList = minimProcess.getChannelService().getChannel(Definition.LEFT_CHANNEL);
@@ -234,6 +248,10 @@ public class Application extends SimpleApplication {
         
         //System.out.println("Rotation: X: " + cam.getRotation().getX() + " Y:" + cam.getRotation().getY() + " Z:" + cam.getRotation().getZ() + " W:" + cam.getRotation().getW());
         //System.out.println("Direction: X: " + cam.getLocation().x + " Y:" + cam.getLocation().y + " Z:" + cam.getLocation().z);
+        
+        if(timeCounter.getTimeLeft() == timeCounter.getTimeEnd()){
+            fadeFilter.fadeIn();
+        }
     }
 
     @Override
